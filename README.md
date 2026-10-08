@@ -9,6 +9,8 @@ A Claude Code mod that adds an agents sidebar. `/agents-pane` opens a pane that 
 - **While it runs**, the row shows a turning circle and a timer instead of the button.
 - **When it finishes**, a toast appears and the agent's report is posted to the chat as a message from the plugin, so Claude reports back on it.
 
+![A finished bug-spotter's report posted to the chat as a message from the plugin, Claude's summary below it, and the agents pane on the right](docs/report-back.webp)
+
 Run `/agents-pane` again, or press Esc in the pane, to close it.
 
 ## Install
