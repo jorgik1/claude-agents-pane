@@ -2,6 +2,8 @@
 
 A Claude Code mod that adds an agents sidebar. `/agents-pane` opens a pane that lists every agent the session can use, each in the color from its config file, with a **▶ run** button to start it.
 
+![The agents pane: one click starts bug-spotter, its row shows a spinner and timer until it finishes, then three agents run at once](docs/agents-pane.gif)
+
 - **Sections**: project agents (`.claude/agents`), user agents (`~/.claude/agents`), then built-in and plugin agents. A project agent overrides a user agent with the same name.
 - **▶ run** starts the agent in the background on the session's project, with the task "Do your usual job for the project in `<folder>` and report what you found." It does not use the chat prompt box.
 - **While it runs**, the row shows a turning circle and a timer instead of the button.
@@ -34,6 +36,10 @@ claude plugin update agents-pane@jorgik1-mods
 ```
 
 Then run `/reload-plugins`.
+
+## Try it
+
+The [`demo/`](demo) folder is a tiny cart project with three quick project agents (`bug-spotter`, `readme-checker`, `todo-finder`) and a few deliberate bugs for them to find. Open a Claude Code session in `demo/`, run `/agents-pane`, and press **▶ run** on `bug-spotter`.
 
 ## Notes
 

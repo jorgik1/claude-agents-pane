@@ -54,8 +54,7 @@ test('lists agents in their config color and Run starts the agent on the project
     const ui = await $.ui.mount({ plugin: 'agents-pane', surface, ...PANE })
     const row = await ui.find({ type: 'Text', text: '● qa-agent sonnet' })
     expect((row?.children[0] as { props: { color?: string } }).props.color).toBe('#22c55e')
-    expect(await ui.find({ type: 'Text', text: 'USER' })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: '~/.claude/agents · 1' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'USER ~/.claude/agents · 1' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'Use this agent to QA work.' })).toBeDefined()
     await ui.press({ key: 'run-qa-agent' })
     expect(spawned.pop()).toEqual({

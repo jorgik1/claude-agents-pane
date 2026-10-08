@@ -19,14 +19,11 @@ const seen = new Map<string, number>()
 
 type Engine = Parameters<Hook<'ui.press'>>[0]
 
-// Run buttons are answered by the `ui.press` and `ui.focus` hooks, by key, not by their closure.
+// Run buttons are answered by the `ui.press` hook, by key, not by their closure.
 const RUN = 'run-'
 const viaPressHook = () => undefined
 // Agents whose start is in flight, so a second quick press starts nothing.
 const starting = new Set<string>()
-// Whether the pane held the keyboard at its last draw: a click on a pane without it only
-// gives it the keyboard and moves the ring, and never reaches `ui.press`.
-let paneFocused = false
 
 // The agent does its usual job on the session's project; nothing is asked of the chat.
 const startAgent = async ($: Engine, name: string) => {
@@ -100,18 +97,6 @@ export const register: Register = on => {
     return { element: e.element }
   })
 
-  // The first click on a pane without the keyboard lands the ring on the clicked Run button
-  // and presses nothing: take it as the press. Tab and the arrows need the keyboard already.
-  on('ui.focus', { requestId: PANE }, async ($, e, next) => {
-    const wasFocused = paneFocused
-    const moved = await next(e)
-    if (!wasFocused && e.origin.kind === 'person' && e.element?.startsWith(RUN)) {
-      void startAgent($, e.element.slice(RUN.length))
-    }
-
-    return moved
-  })
-
   // Redraw once a subagent starts, so the pane shows it running.
   on('agent.spawn', async ($, e, next) => {
     const spawned = await next(e)
@@ -153,7 +138,6 @@ export const register: Register = on => {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const elements = $.ui.resolve(e)
     const { Box, Text, Button } = elements
-    paneFocused = e.props.isFocused
     const home = await $.env.get('HOME')
     const cwd = await $.session.cwd()
     const now = await $.clock.now()
@@ -226,9 +210,13 @@ export const register: Register = on => {
           return (
             <Box key={`section-${source}`} flexDirection="column" gap={1}>
               <Box flexDirection="row" gap={1}>
-                <Text bold color={SECTION}>{section.label}</Text>
-                <Text dimColor>{sub}</Text>
-                <Box flexGrow={1} height={1} overflow="hidden">
+                {/* The label keeps its width; the rule takes what is left and clips to one line. */}
+                <Box flexShrink={0}>
+                  <Text>
+                    <Text bold color={SECTION}>{section.label}</Text> <Text dimColor>{sub}</Text>
+                  </Text>
+                </Box>
+                <Box flexGrow={1} flexShrink={1} minWidth={0} height={1} overflow="hidden">
                   <Text dimColor>{'─'.repeat(e.props.bodyColumns)}</Text>
                 </Box>
               </Box>
