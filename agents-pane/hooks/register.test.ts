@@ -50,6 +50,12 @@ test('lists agents in their config color and Run starts the agent on the project
     return { model: 'sonnet', agentId: 'a9' }
   })
 
+  const commands: string[] = []
+  on('command.run', ($, e) => {
+    commands.push(e.command)
+    return { text: '' }
+  })
+
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount({ plugin: 'agents-pane', surface, ...PANE })
     const row = await ui.find({ type: 'Text', text: '● qa-agent sonnet' })
@@ -61,12 +67,19 @@ test('lists agents in their config color and Run starts the agent on the project
       subagentType: 'qa-agent',
       prompt: 'Do your usual job for the project in /p/site and report what you found.',
     })
+    // A start opens the background tasks panel.
+    expect(commands.pop()).toBe('tasks')
     await ui.unmount()
   }
 })
 
-test('a running agent shows a turning circle and its timer instead of Run', async ($, on) => {
+test('a running agent shows a turning circle, its timer and view instead of Run', async ($, on) => {
   world(on, [{ id: 'a1', type: 'qa-agent', status: 'running', description: 'QA' }])
+  const commands: string[] = []
+  on('command.run', ($, e) => {
+    commands.push(e.command)
+    return { text: '' }
+  })
 
   // The terminal turns a glyph; the desktop draws an SVG ring beside the timer.
   for (const [surface, frames] of [
@@ -75,6 +88,8 @@ test('a running agent shows a turning circle and its timer instead of Run', asyn
   ] as const) {
     const ui = await $.ui.mount({ plugin: 'agents-pane', surface, ...PANE })
     expect(await ui.find({ key: 'run-qa-agent' })).toBeUndefined()
+    await ui.press({ key: 'view-qa-agent' })
+    expect(commands.pop()).toBe('tasks')
     expect((await ui.find({ type: 'Text', in: 'running-header' }))?.text).toContain('1 running')
     expect((await ui.find({ type: 'Text', in: 'running-qa-agent' }))?.text).toBe(frames[0])
     await ui.advance(1000)

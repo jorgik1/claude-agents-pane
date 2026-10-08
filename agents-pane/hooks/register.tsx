@@ -25,6 +25,10 @@ const viaPressHook = () => undefined
 // Agents whose start is in flight, so a second quick press starts nothing.
 const starting = new Set<string>()
 
+// The built-in /tasks: the desktop opens its Background tasks panel, the terminal its dialog.
+const VIEW = 'view-'
+const showTasks = ($: Engine) => $.command.run({ command: 'tasks' }).catch(() => undefined)
+
 // The agent does its usual job on the session's project; nothing is asked of the chat.
 const startAgent = async ($: Engine, name: string) => {
   if (starting.has(name)) return
@@ -42,6 +46,8 @@ const startAgent = async ($: Engine, name: string) => {
     }
     $.ui.toast(`${name} started`)
     $.ui.invalidate('ui.render')
+    // Not awaited: a command waits for an idle session, the press must not.
+    void showTasks($)
   } catch (err) {
     $.ui.toast(`${name} not started: ${err instanceof Error ? err.message : String(err)}`)
   } finally {
@@ -91,8 +97,9 @@ export const register: Register = on => {
   }).catch(() => undefined)
 
   on('ui.press', { plugin: 'agents-pane', requestId: PANE }, async ($, e, next) => {
-    if (!e.element.startsWith(RUN)) return next(e)
-    await startAgent($, e.element.slice(RUN.length))
+    if (e.element.startsWith(RUN)) await startAgent($, e.element.slice(RUN.length))
+    else if (e.element.startsWith(VIEW)) await showTasks($)
+    else return next(e)
 
     return { element: e.element }
   })
@@ -234,7 +241,10 @@ export const register: Register = on => {
                       {since === undefined ? (
                         <Button key={`${RUN}${agent.name}`} label="▶ run" onPress={viaPressHook} />
                       ) : (
-                        running(`running-${agent.name}`, 'running', since)
+                        <Box flexDirection="row" alignItems="center" gap={1}>
+                          {running(`running-${agent.name}`, 'running', since)}
+                          <Button key={`${VIEW}${agent.name}`} label="view" plain dimColor onPress={viaPressHook} />
+                        </Box>
                       )}
                     </Box>
                     {agent.description && (
