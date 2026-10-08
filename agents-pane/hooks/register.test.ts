@@ -24,7 +24,7 @@ const PANE = {
 
 const world = (on: On, running: AgentInfo[], toasts: string[] = []) => {
   mock.env(on, { HOME: '/h' })
-  mock.clock(on, { now: 10_000 })
+  const clock = mock.clock(on, { now: 10_000 })
   on('session.cwd', () => ({ value: '/p/site' }))
   on('agent.list', () => ({ value: running }))
   on('fs.list', ($, e) => ({
@@ -38,10 +38,11 @@ const world = (on: On, running: AgentInfo[], toasts: string[] = []) => {
     toasts.push(e.text)
     return { value: undefined }
   })
+  return clock
 }
 
 test('lists agents in their config color and Run starts the agent on the project', async ($, on) => {
-  world(on, [])
+  const clock = world(on, [])
   const spawned: { subagentType: string; prompt: string }[] = []
   on('agent.spawn', ($, e) => {
     // The kit hands the stand-in engine the Agent tool's own input.
@@ -70,6 +71,8 @@ test('lists agents in their config color and Run starts the agent on the project
     // A start opens the background tasks panel.
     expect(commands.pop()).toBe('tasks')
     await ui.unmount()
+    // Past the double-click guard before the next surface presses again.
+    await clock.advance(3000)
   }
 })
 
@@ -146,5 +149,25 @@ test('two quick presses start one agent', async ($, on) => {
   release()
   await Promise.all([first, second])
   expect(spawns).toBe(1)
+  await ui.unmount()
+})
+
+test('a second click within two seconds of a start starts nothing; one after it does', async ($, on) => {
+  const clock = world(on, [])
+  let spawns = 0
+  on('agent.spawn', () => {
+    spawns++
+    return { model: 'sonnet' }
+  })
+  on('command.run', () => ({ text: '' }))
+
+  const ui = await $.ui.mount({ plugin: 'agents-pane', surface: 'desktop', ...PANE })
+  await ui.press({ key: 'run-qa-agent' })
+  await clock.advance(500)
+  await ui.press({ key: 'run-qa-agent' })
+  expect(spawns).toBe(1)
+  await clock.advance(2000)
+  await ui.press({ key: 'run-qa-agent' })
+  expect(spawns).toBe(2)
   await ui.unmount()
 })
