@@ -1,0 +1,11 @@
+{
+  "name": "agents-pane",
+  "version": "0.1.0",
+  "description": "/agents-pane opens a sidebar listing available agents in their configured colors, with a Run button each",
+  "author": { "name": "Yurii Stenin", "url": "https://github.com/jorgik1" },
+  "homepage": "https://github.com/jorgik1/claude-agents-pane",
+  "repository": "https://github.com/jorgik1/claude-agents-pane",
+  "license": "MIT",
+  "keywords": ["agents", "subagents", "sidebar", "pane"],
+  "types": "./types/index.d.ts"
+}

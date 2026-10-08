@@ -1,0 +1,3 @@
+# Type definitions Claude Code lays beside a loaded plugin; regenerated on load.
+.claude-plugin/types/
+.DS_Store

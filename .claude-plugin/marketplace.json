@@ -1,0 +1,12 @@
+{
+  "name": "jorgik1-mods",
+  "description": "Claude Code mods by Yurii Stenin",
+  "owner": { "name": "Yurii Stenin" },
+  "plugins": [
+    {
+      "name": "agents-pane",
+      "source": "./agents-pane",
+      "description": "/agents-pane opens a sidebar listing available agents in their configured colors, with a Run button each"
+    }
+  ]
+}
